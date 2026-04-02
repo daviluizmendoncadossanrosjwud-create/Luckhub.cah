@@ -1,0 +1,336 @@
+-- SERVIÇOS
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- CONFIGURAÇÃO DA KEY
+local CORRECT_KEY = "FREE_8972666366OI2977772oo28"
+local KEY_LINK = "https://direct-link.net/4751120/PoVU4Hu6TdZz"
+
+-- REMOVE GUI ANTIGA
+if CoreGui:FindFirstChild("LuckHubGui") then CoreGui.LuckHubGui:Destroy() end
+if CoreGui:FindFirstChild("LuckHubKeySystem") then CoreGui.LuckHubKeySystem:Destroy() end
+
+-- --- KEY SYSTEM UI ---
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Name = "LuckHubKeySystem"
+KeyGui.Parent = CoreGui
+
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "Main"
+KeyFrame.Parent = KeyGui
+KeyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+KeyFrame.Size = UDim2.new(0, 300, 0, 200)
+KeyFrame.BorderSizePixel = 0
+Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
+
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Parent = KeyFrame
+KeyTitle.Size = UDim2.new(1, 0, 0, 50)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.Text = "luck hub key system"
+KeyTitle.TextColor3 = Color3.new(1, 1, 1)
+KeyTitle.TextSize = 18
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Parent = KeyFrame
+KeyInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 35)
+KeyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyInput.PlaceholderText = "Insira a Key aqui..."
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", KeyInput)
+
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Parent = KeyFrame
+SubmitBtn.Position = UDim2.new(0.1, 0, 0.55, 0)
+SubmitBtn.Size = UDim2.new(0.8, 0, 0, 30)
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+SubmitBtn.Text = "Submit"
+SubmitBtn.TextColor3 = Color3.new(1, 1, 1)
+SubmitBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", SubmitBtn)
+
+local GetKeyBtn = Instance.new("TextButton")
+GetKeyBtn.Parent = KeyFrame
+GetKeyBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
+GetKeyBtn.Size = UDim2.new(0.8, 0, 0, 30)
+GetKeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+GetKeyBtn.Text = "Get Key"
+GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
+GetKeyBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", GetKeyBtn)
+
+-- --- LÓGICA DO SCRIPT PRINCIPAL (DENTRO DE UMA FUNÇÃO) ---
+local function LoadMainScript()
+    -- Variáveis de Estado
+    local savedPosition = nil
+    local autoProximityEnabled = false
+    local infiniteJumpEnabled = false
+    local xrayEnabled = false
+    local minimized = false
+    local originalTransparencies = {}
+
+    -- GUI PRINCIPAL
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "LuckHubGui"
+    ScreenGui.Parent = CoreGui
+    ScreenGui.ResetOnSpawn = false
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+    MainFrame.Position = UDim2.new(0.5,-210,0.5,-125)
+    MainFrame.Size = UDim2.new(0,420,0,250)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.ClipsDescendants = true
+    Instance.new("UICorner",MainFrame).CornerRadius = UDim.new(0,10)
+
+    -- Função de arrastar
+    local function MakeDraggable(gui)
+        local dragging, dragInput, dragStart, startPos
+        gui.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true dragStart = input.Position startPos = gui.Position
+                input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+            end
+        end)
+        gui.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MousePointer or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end end)
+        UserInputService.InputChanged:Connect(function(input)
+            if input == dragInput and dragging then
+                local delta = input.Position - dragStart
+                gui.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+    end
+    MakeDraggable(MainFrame)
+
+    -- TopBar
+    local TopBar = Instance.new("Frame")
+    TopBar.Parent = MainFrame
+    TopBar.BackgroundColor3 = Color3.fromRGB(30,30,30)
+    TopBar.Size = UDim2.new(1,0,0,35)
+    TopBar.BorderSizePixel = 0
+    Instance.new("UICorner",TopBar).CornerRadius = UDim.new(0,10)
+
+    local Title = Instance.new("TextLabel")
+    Title.Parent = TopBar
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0,10,0,0)
+    Title.Size = UDim2.new(0.7,0,1,0)
+    Title.Font = Enum.Font.GothamBold
+    Title.Text = "luck hub admin"
+    Title.TextColor3 = Color3.fromRGB(255,255,255)
+    Title.TextSize = 16
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Parent = TopBar
+    ToggleBtn.BackgroundTransparency = 1
+    ToggleBtn.Position = UDim2.new(1,-35,0,0)
+    ToggleBtn.Size = UDim2.new(0,35,1,0)
+    ToggleBtn.Font = Enum.Font.GothamBold
+    ToggleBtn.Text = "▼"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    ToggleBtn.TextSize = 16
+    ToggleBtn.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        local targetSize = minimized and UDim2.new(0, 420, 0, 35) or UDim2.new(0, 420, 0, 250)
+        TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = targetSize}):Play()
+        ToggleBtn.Text = minimized and "▲" or "▼"
+    end)
+
+    -- Scrolling Frames
+    local ScrollFrame1 = Instance.new("ScrollingFrame", MainFrame)
+    ScrollFrame1.Position = UDim2.new(0,0,0,35)
+    ScrollFrame1.Size = UDim2.new(0.5,0,1,-35)
+    ScrollFrame1.BackgroundTransparency = 1
+    ScrollFrame1.BorderSizePixel = 0
+    ScrollFrame1.ScrollBarThickness = 2
+    ScrollFrame1.CanvasSize = UDim2.new(0,0,0,550)
+
+    local ScrollFrame2 = Instance.new("ScrollingFrame", MainFrame)
+    ScrollFrame2.Position = UDim2.new(0.5,0,0,35)
+    ScrollFrame2.Size = UDim2.new(0.5,0,1,-35)
+    ScrollFrame2.BackgroundColor3 = Color3.fromRGB(25,25,25)
+    ScrollFrame2.BorderSizePixel = 0
+    ScrollFrame2.ScrollBarThickness = 4
+    ScrollFrame2.CanvasSize = UDim2.new(0,0,0,650)
+
+    local function ApplyLayout(p)
+        local l = Instance.new("UIListLayout", p)
+        l.Padding = UDim.new(0,8)
+        l.HorizontalAlignment = "Center"
+        Instance.new("UIPadding", p).PaddingTop = UDim.new(0,10)
+    end
+    ApplyLayout(ScrollFrame1)
+    ApplyLayout(ScrollFrame2)
+
+    local function CreateButton(parent, text)
+        local btn = Instance.new("TextButton", parent)
+        btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+        btn.Size = UDim2.new(0.9,0,0,35)
+        btn.Font = Enum.Font.GothamSemibold
+        btn.Text = text
+        btn.TextColor3 = Color3.fromRGB(255,255,255)
+        btn.TextSize = 12
+        Instance.new("UICorner",btn).CornerRadius = UDim.new(0,6)
+        return btn
+    end
+
+    -- BOTOES ABA 1
+    local btnSalvar = CreateButton(ScrollFrame1, "salvar posição")
+    local btnTp = CreateButton(ScrollFrame1, "tp")
+    local btnTp10 = CreateButton(ScrollFrame1, "tp 10")
+    local btnTpTeped = CreateButton(ScrollFrame1, "tp teped")
+    local btnTpCima = CreateButton(ScrollFrame1, "tp pra cima")
+    local btnTpBaixo = CreateButton(ScrollFrame1, "tp pra baixo")
+    local btnAutoProx = CreateButton(ScrollFrame1, "auto proximity: OFF")
+    local btnInfJump = CreateButton(ScrollFrame1, "infinite jump: OFF")
+    local btnXray = CreateButton(ScrollFrame1, "x-ray: OFF")
+
+    -- BOTOES ABA 2
+    local SpeedInput = Instance.new("TextBox", ScrollFrame2)
+    SpeedInput.Size = UDim2.new(0.9,0,0,35)
+    SpeedInput.PlaceholderText = "Velocidade (1-750)"
+    SpeedInput.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    SpeedInput.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", SpeedInput)
+
+    local btnAtivarSpeed = CreateButton(ScrollFrame2, "ativar speed")
+    local altoAtivo = false
+    local btnAlto = CreateButton(ScrollFrame2, "corpo alto")
+    local btnTpStealNew = CreateButton(ScrollFrame2, "tp to steal (fast)")
+    local btnAddClone = CreateButton(ScrollFrame2, "add clone")
+    local btnTpClone = CreateButton(ScrollFrame2, "tp to clone")
+    local btnFreeze = CreateButton(ScrollFrame2, "congelar time")
+
+    -- LOGICA FUNCIONAL
+    local function getHRP() return player.Character and player.Character:FindFirstChild("HumanoidRootPart") end
+
+    btnSalvar.MouseButton1Click:Connect(function()
+        local hrp = getHRP()
+        if hrp then savedPosition = hrp.CFrame btnSalvar.Text = "posição salva!" task.wait(1) btnSalvar.Text = "salvar posição" end
+    end)
+
+    local function tpSaved() if savedPosition and getHRP() then getHRP().CFrame = savedPosition end end
+    btnTp.MouseButton1Click:Connect(tpSaved)
+    btnTpTeped.MouseButton1Click:Connect(tpSaved)
+    btnTp10.MouseButton1Click:Connect(function() if getHRP() then getHRP().CFrame = getHRP().CFrame * CFrame.new(0,0,-10) end end)
+    btnTpCima.MouseButton1Click:Connect(function() if getHRP() then getHRP().CFrame = getHRP().CFrame + Vector3.new(0,20,0) end end)
+    btnTpBaixo.MouseButton1Click:Connect(function() if getHRP() then getHRP().CFrame = getHRP().CFrame + Vector3.new(0,-15,0) end end)
+
+    btnAutoProx.MouseButton1Click:Connect(function()
+        autoProximityEnabled = not autoProximityEnabled
+        btnAutoProx.Text = "auto proximity: "..(autoProximityEnabled and "ON" or "OFF")
+    end)
+
+    btnInfJump.MouseButton1Click:Connect(function()
+        infiniteJumpEnabled = not infiniteJumpEnabled
+        btnInfJump.Text = "infinite jump: "..(infiniteJumpEnabled and "ON" or "OFF")
+    end)
+
+    btnXray.MouseButton1Click:Connect(function()
+        xrayEnabled = not xrayEnabled
+        btnXray.Text = "x-ray: "..(xrayEnabled and "ON" or "OFF")
+        if xrayEnabled then
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("BasePart") and not v:IsDescendantOf(player.Character) then
+                    originalTransparencies[v] = v.Transparency v.Transparency = 0.5
+                end
+            end
+        else
+            for part, trans in pairs(originalTransparencies) do if part.Parent then part.Transparency = trans end end
+            originalTransparencies = {}
+        end
+    end)
+
+    btnAtivarSpeed.MouseButton1Click:Connect(function()
+        local v = tonumber(SpeedInput.Text)
+        if v and player.Character:FindFirstChild("Humanoid") then player.Character.Humanoid.WalkSpeed = v end
+    end)
+
+    btnAlto.MouseButton1Click:Connect(function()
+        altoAtivo = not altoAtivo
+        btnAlto.Text = altoAtivo and "corpo alto: ON" or "deixar corpo alto"
+        if getHRP() then
+            getHRP().Size = altoAtivo and Vector3.new(0.2,0.2,0.2) or Vector3.new(2,2,1)
+            player.Character.Humanoid.HipHeight = altoAtivo and 30 or 0
+        end
+    end)
+
+    btnTpStealNew.MouseButton1Click:Connect(function()
+        local old = getHRP().CFrame
+        getHRP().CFrame = player.RespawnLocation and player.RespawnLocation.CFrame or CFrame.new(0,50,0)
+        task.wait(0.5)
+        getHRP().CFrame = old
+    end)
+
+    local myClone = nil
+    btnAddClone.MouseButton1Click:Connect(function()
+        if myClone then myClone:Destroy() end
+        player.Character.Archivable = true
+        myClone = player.Character:Clone()
+        myClone.Parent = workspace
+        myClone:MoveTo(getHRP().Position + Vector3.new(5,0,0))
+    end)
+
+    btnTpClone.MouseButton1Click:Connect(function() if myClone then getHRP().CFrame = myClone.HumanoidRootPart.CFrame end end)
+
+    local frozen = false
+    btnFreeze.MouseButton1Click:Connect(function()
+        frozen = not frozen
+        btnFreeze.Text = frozen and "time: OFF" or "congelar time"
+        for _,v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") and not v:IsDescendantOf(player.Character) then v.Anchored = frozen end
+        end
+    end)
+
+    RunService.Stepped:Connect(function()
+        if autoProximityEnabled then
+            for _,obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ProximityPrompt") then obj.HoldDuration = 0 end
+            end
+        end
+    end)
+
+    UserInputService.JumpRequest:Connect(function()
+        if infiniteJumpEnabled and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end)
+
+    print("Luck Hub Carregado com Sucesso!")
+end
+
+-- --- LÓGICA DO BOTÃO SUBMIT (KEY SYSTEM) ---
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == CORRECT_KEY then
+        KeyGui:Destroy() -- Fecha o sistema de key
+        LoadMainScript() -- Abre o script principal
+    else
+        KeyInput.Text = ""
+        KeyInput.PlaceholderText = "KEY INCORRETA!"
+        task.wait(1)
+        KeyInput.PlaceholderText = "Insira a Key aqui..."
+    end
+end)
+
+-- --- LÓGICA DO BOTÃO GET KEY ---
+GetKeyBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(KEY_LINK)
+        GetKeyBtn.Text = "LINK COPIADO!"
+        task.wait(2)
+        GetKeyBtn.Text = "Get Key"
+    else
+        GetKeyBtn.Text = "Erro ao copiar (Executor incompatível)"
+    end
+end)
+
