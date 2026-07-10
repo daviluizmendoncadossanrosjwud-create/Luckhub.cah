@@ -9,67 +9,34 @@ local player = Players.LocalPlayer
 -- CONFIGURAÇÃO DA KEY
 local CORRECT_KEY = "FREE_8972666366OI2977772oo28"
 local KEY_LINK = "https://direct-link.net/4751120/PoVU4Hu6TdZz"
+local EXPIRATION_TIME = 5 * 3600 -- 5 horas em segundos
+local FILE_NAME = "LuckHub_KeyTime.txt"
 
 -- REMOVE GUI ANTIGA
 if CoreGui:FindFirstChild("LuckHubGui") then CoreGui.LuckHubGui:Destroy() end
 if CoreGui:FindFirstChild("LuckHubKeySystem") then CoreGui.LuckHubKeySystem:Destroy() end
 
--- --- KEY SYSTEM UI ---
-local KeyGui = Instance.new("ScreenGui")
-KeyGui.Name = "LuckHubKeySystem"
-KeyGui.Parent = CoreGui
+-- FUNÇÕES DE SALVAMENTO LOCAL (DURAÇÃO DA KEY)
+local function saveKeyTime()
+    if writefile then
+        writefile(FILE_NAME, tostring(os.time()))
+    end
+end
 
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Name = "Main"
-KeyFrame.Parent = KeyGui
-KeyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-KeyFrame.Size = UDim2.new(0, 300, 0, 200)
-KeyFrame.BorderSizePixel = 0
-Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
+local function getKeyRemainingTime()
+    if readfile and isfile and isfile(FILE_NAME) then
+        local savedTime = tonumber(readfile(FILE_NAME))
+        if savedTime then
+            local elapsed = os.time() - savedTime
+            local remaining = EXPIRATION_TIME - elapsed
+            return remaining > 0 and remaining or 0
+        end
+    end
+    return 0
+end
 
-local KeyTitle = Instance.new("TextLabel")
-KeyTitle.Parent = KeyFrame
-KeyTitle.Size = UDim2.new(1, 0, 0, 50)
-KeyTitle.BackgroundTransparency = 1
-KeyTitle.Font = Enum.Font.GothamBold
-KeyTitle.Text = "luck hub key system"
-KeyTitle.TextColor3 = Color3.new(1, 1, 1)
-KeyTitle.TextSize = 18
-
-local KeyInput = Instance.new("TextBox")
-KeyInput.Parent = KeyFrame
-KeyInput.Position = UDim2.new(0.1, 0, 0.3, 0)
-KeyInput.Size = UDim2.new(0.8, 0, 0, 35)
-KeyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-KeyInput.PlaceholderText = "Insira a Key aqui..."
-KeyInput.Text = ""
-KeyInput.TextColor3 = Color3.new(1, 1, 1)
-Instance.new("UICorner", KeyInput)
-
-local SubmitBtn = Instance.new("TextButton")
-SubmitBtn.Parent = KeyFrame
-SubmitBtn.Position = UDim2.new(0.1, 0, 0.55, 0)
-SubmitBtn.Size = UDim2.new(0.8, 0, 0, 30)
-SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-SubmitBtn.Text = "Submit"
-SubmitBtn.TextColor3 = Color3.new(1, 1, 1)
-SubmitBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", SubmitBtn)
-
-local GetKeyBtn = Instance.new("TextButton")
-GetKeyBtn.Parent = KeyFrame
-GetKeyBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
-GetKeyBtn.Size = UDim2.new(0.8, 0, 0, 30)
-GetKeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-GetKeyBtn.Text = "Get Key"
-GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
-GetKeyBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", GetKeyBtn)
-
--- --- LÓGICA DO SCRIPT PRINCIPAL (DENTRO DE UMA FUNÇÃO) ---
-local function LoadMainScript()
-    -- Variáveis de Estado
+-- --- LÓGICA DO SCRIPT PRINCIPAL ---
+local function LoadMainScript(initialRemainingTime)
     local savedPosition = nil
     local autoProximityEnabled = false
     local infiniteJumpEnabled = false
@@ -92,7 +59,7 @@ local function LoadMainScript()
     MainFrame.ClipsDescendants = true
     Instance.new("UICorner",MainFrame).CornerRadius = UDim.new(0,10)
 
-    -- Função de arrastar
+    -- Arrastar
     local function MakeDraggable(gui)
         local dragging, dragInput, dragStart, startPos
         gui.InputBegan:Connect(function(input)
@@ -211,6 +178,15 @@ local function LoadMainScript()
     local btnTpClone = CreateButton(ScrollFrame2, "tp to clone")
     local btnFreeze = CreateButton(ScrollFrame2, "congelar time")
 
+    -- --- TEXTO DE COOLDOWN (ABAIXO DO SCROLL 2) ---
+    local CooldownLabel = Instance.new("TextLabel", ScrollFrame2)
+    CooldownLabel.Size = UDim2.new(0.9, 0, 0, 30)
+    CooldownLabel.BackgroundTransparency = 1
+    CooldownLabel.Font = Enum.Font.GothamBold
+    CooldownLabel.TextColor3 = Color3.fromRGB(255, 65, 65)
+    CooldownLabel.TextSize = 11
+    CooldownLabel.Text = "Key Expira em: --:--:--"
+
     -- LOGICA FUNCIONAL
     local function getHRP() return player.Character and player.Character:FindFirstChild("HumanoidRootPart") end
 
@@ -306,14 +282,86 @@ local function LoadMainScript()
         end
     end)
 
+    -- Loop de verificação do Cooldown da Key
+    task.spawn(function()
+        while task.wait(1) do
+            local remaining = getKeyRemainingTime()
+            if remaining <= 0 then
+                ScreenGui:Destroy()
+                if delfile and isfile and isfile(FILE_NAME) then delfile(FILE_NAME) end
+                -- Força reabrir o sistema de Key original se expirar
+                break
+            else
+                local hours = math.floor(remaining / 3600)
+                local minutes = math.floor((remaining % 3600) / 60)
+                local seconds = math.floor(remaining % 60)
+                CooldownLabel.Text = string.format("Key Expira em: %02d:%02d:%02d", hours, minutes, seconds)
+            end
+        end
+    end)
+
     print("Luck Hub Carregado com Sucesso!")
 end
 
--- --- LÓGICA DO BOTÃO SUBMIT (KEY SYSTEM) ---
+-- --- CRIANDO INTERFACE DO KEY SYSTEM ---
+local KeyGui = Instance.new("ScreenGui")
+KeyGui.Name = "LuckHubKeySystem"
+KeyGui.Parent = CoreGui
+
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "Main"
+KeyFrame.Parent = KeyGui
+KeyFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+KeyFrame.Size = UDim2.new(0, 300, 0, 200)
+KeyFrame.BorderSizePixel = 0
+Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 10)
+
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Parent = KeyFrame
+KeyTitle.Size = UDim2.new(1, 0, 0, 50)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.Text = "luck hub key system"
+KeyTitle.TextColor3 = Color3.new(1, 1, 1)
+KeyTitle.TextSize = 18
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Parent = KeyFrame
+KeyInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 35)
+KeyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+KeyInput.PlaceholderText = "Insira a Key aqui..."
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.new(1, 1, 1)
+Instance.new("UICorner", KeyInput)
+
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Parent = KeyFrame
+SubmitBtn.Position = UDim2.new(0.1, 0, 0.55, 0)
+SubmitBtn.Size = UDim2.new(0.8, 0, 0, 30)
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+SubmitBtn.Text = "Submit"
+SubmitBtn.TextColor3 = Color3.new(1, 1, 1)
+SubmitBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", SubmitBtn)
+
+local GetKeyBtn = Instance.new("TextButton")
+GetKeyBtn.Parent = KeyFrame
+GetKeyBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
+GetKeyBtn.Size = UDim2.new(0.8, 0, 0, 30)
+GetKeyBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+GetKeyBtn.Text = "Get Key"
+GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
+GetKeyBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", GetKeyBtn)
+
+-- --- LÓGICA DO BOTÃO SUBMIT ---
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == CORRECT_KEY then
-        KeyGui:Destroy() -- Fecha o sistema de key
-        LoadMainScript() -- Abre o script principal
+        saveKeyTime() -- Salva o tempo atual localmente
+        KeyGui:Destroy() 
+        LoadMainScript() 
     else
         KeyInput.Text = ""
         KeyInput.PlaceholderText = "KEY INCORRETA!"
@@ -333,4 +381,11 @@ GetKeyBtn.MouseButton1Click:Connect(function()
         GetKeyBtn.Text = "Erro ao copiar (Executor incompatível)"
     end
 end)
+
+-- --- VERIFICAÇÃO AUTOMÁTICA AO INICIAR ---
+local timeLeft = getKeyRemainingTime()
+if timeLeft > 0 then
+    KeyGui:Destroy() -- Ignora a tela de key caso ainda esteja no tempo válido
+    LoadMainScript()
+end
 
